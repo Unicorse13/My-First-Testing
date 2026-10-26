@@ -1,0 +1,36 @@
+CREATE TABLE municipalities(id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE);
+CREATE TABLE users(id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE COLLATE NOCASE, password_hash TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('admin','clerk','reviewer','inspector','applicant')), municipality_id INTEGER NOT NULL REFERENCES municipalities(id));
+CREATE TABLE sessions(token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, csrf_token TEXT NOT NULL, expires_at TEXT NOT NULL);
+CREATE TABLE applicants(id INTEGER PRIMARY KEY, municipality_id INTEGER NOT NULL REFERENCES municipalities(id), name TEXT NOT NULL, email TEXT NOT NULL, phone TEXT NOT NULL DEFAULT '');
+CREATE TABLE contractors(id INTEGER PRIMARY KEY, municipality_id INTEGER NOT NULL REFERENCES municipalities(id), name TEXT NOT NULL, license_number TEXT NOT NULL, email TEXT NOT NULL DEFAULT '', UNIQUE(municipality_id,license_number));
+CREATE TABLE permit_types(code TEXT PRIMARY KEY, label TEXT NOT NULL, base_fee_cents INTEGER NOT NULL CHECK(base_fee_cents>=0), area_rate_cents INTEGER NOT NULL CHECK(area_rate_cents>=0));
+CREATE TABLE statuses(code TEXT PRIMARY KEY, label TEXT NOT NULL, next_statuses TEXT NOT NULL CHECK(json_valid(next_statuses)));
+CREATE TABLE permits(id INTEGER PRIMARY KEY, number TEXT NOT NULL UNIQUE, municipality_id INTEGER NOT NULL REFERENCES municipalities(id), owner_id INTEGER NOT NULL REFERENCES users(id), applicant_id INTEGER NOT NULL REFERENCES applicants(id), contractor_id INTEGER REFERENCES contractors(id), type TEXT NOT NULL REFERENCES permit_types(code), status TEXT NOT NULL REFERENCES statuses(code), description TEXT NOT NULL, work_address TEXT NOT NULL, area_sqft INTEGER NOT NULL DEFAULT 0 CHECK(area_sqft>=0), prior_approval INTEGER NOT NULL DEFAULT 0 CHECK(prior_approval IN (0,1)), fee_cents INTEGER NOT NULL CHECK(fee_cents>=0), exempt INTEGER NOT NULL DEFAULT 0 CHECK(exempt IN (0,1)), exemption_reason TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, updated_at TEXT NOT NULL, CHECK(exempt=0 OR length(trim(exemption_reason))>0));
+CREATE TRIGGER permit_tenant_insert BEFORE INSERT ON permits BEGIN
+SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM applicants WHERE id=NEW.applicant_id AND municipality_id=NEW.municipality_id) THEN RAISE(ABORT,'Applicant municipality mismatch') END;
+SELECT CASE WHEN NEW.contractor_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM contractors WHERE id=NEW.contractor_id AND municipality_id=NEW.municipality_id) THEN RAISE(ABORT,'Contractor municipality mismatch') END;
+SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM users WHERE id=NEW.owner_id AND municipality_id=NEW.municipality_id) THEN RAISE(ABORT,'Owner municipality mismatch') END;
+END;
+CREATE TRIGGER permit_tenant_update BEFORE UPDATE OF municipality_id,applicant_id,contractor_id,owner_id ON permits BEGIN
+SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM applicants WHERE id=NEW.applicant_id AND municipality_id=NEW.municipality_id) THEN RAISE(ABORT,'Applicant municipality mismatch') END;
+SELECT CASE WHEN NEW.contractor_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM contractors WHERE id=NEW.contractor_id AND municipality_id=NEW.municipality_id) THEN RAISE(ABORT,'Contractor municipality mismatch') END;
+SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM users WHERE id=NEW.owner_id AND municipality_id=NEW.municipality_id) THEN RAISE(ABORT,'Owner municipality mismatch') END;
+END;
+CREATE TABLE plan_reviews(id INTEGER PRIMARY KEY, permit_id INTEGER NOT NULL REFERENCES permits(id), reviewer_id INTEGER NOT NULL REFERENCES users(id), result TEXT NOT NULL CHECK(result IN ('approved','changes_requested')), notes TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL);
+CREATE TABLE inspections(id INTEGER PRIMARY KEY, permit_id INTEGER NOT NULL REFERENCES permits(id), inspector_id INTEGER NOT NULL REFERENCES users(id), scheduled_date TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'scheduled' CHECK(status IN ('scheduled','completed')), result TEXT CHECK(result IN ('passed','failed')), notes TEXT NOT NULL DEFAULT '', follow_up TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, CHECK((status='scheduled' AND result IS NULL) OR (status='completed' AND result IS NOT NULL)));
+CREATE TABLE payments(id INTEGER PRIMARY KEY, permit_id INTEGER NOT NULL REFERENCES permits(id), amount_cents INTEGER NOT NULL CHECK(typeof(amount_cents)='integer' AND amount_cents>0), method TEXT NOT NULL CHECK(method='mock'), reference TEXT NOT NULL UNIQUE, idempotency_key TEXT NOT NULL UNIQUE, request_hash TEXT NOT NULL, reconciled INTEGER NOT NULL DEFAULT 0 CHECK(reconciled IN (0,1)), created_at TEXT NOT NULL);
+CREATE TRIGGER payment_balance BEFORE INSERT ON payments WHEN NEW.amount_cents+(SELECT COALESCE(SUM(amount_cents),0) FROM payments WHERE permit_id=NEW.permit_id)>(SELECT fee_cents FROM permits WHERE id=NEW.permit_id) BEGIN SELECT RAISE(ABORT,'Payment exceeds balance'); END;
+CREATE TRIGGER permit_fee_balance BEFORE UPDATE OF fee_cents ON permits WHEN NEW.fee_cents<(SELECT COALESCE(SUM(amount_cents),0) FROM payments WHERE permit_id=NEW.id) BEGIN SELECT RAISE(ABORT,'Fee cannot be less than paid amount'); END;
+CREATE TABLE certificates(id INTEGER PRIMARY KEY, permit_id INTEGER NOT NULL REFERENCES permits(id), number TEXT NOT NULL UNIQUE, status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','revoked')), created_at TEXT NOT NULL, revoked_at TEXT, CHECK((status='active' AND revoked_at IS NULL) OR (status='revoked' AND revoked_at IS NOT NULL)));
+CREATE UNIQUE INDEX certificate_active ON certificates(permit_id) WHERE status='active';
+CREATE TABLE notices(id INTEGER PRIMARY KEY, permit_id INTEGER NOT NULL REFERENCES permits(id), kind TEXT NOT NULL CHECK(kind IN ('notice','order')), description TEXT NOT NULL, deadline TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','resolved')), created_at TEXT NOT NULL);
+CREATE TABLE audit_log(id INTEGER PRIMARY KEY, municipality_id INTEGER NOT NULL REFERENCES municipalities(id), user_id INTEGER NOT NULL REFERENCES users(id), entity TEXT NOT NULL, entity_id INTEGER NOT NULL, action TEXT NOT NULL, details TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TRIGGER audit_no_update BEFORE UPDATE ON audit_log BEGIN SELECT RAISE(ABORT,'Audit records are immutable'); END;
+CREATE TRIGGER audit_no_delete BEFORE DELETE ON audit_log BEGIN SELECT RAISE(ABORT,'Audit records are immutable'); END;
+CREATE INDEX permits_tenant_updated ON permits(municipality_id,updated_at);
+CREATE INDEX permits_owner ON permits(owner_id);
+CREATE INDEX payments_permit ON payments(permit_id);
+CREATE INDEX inspection_permit ON inspections(permit_id);
+CREATE INDEX reviews_permit ON plan_reviews(permit_id);
+CREATE INDEX notices_permit ON notices(permit_id);
+CREATE INDEX audit_tenant ON audit_log(municipality_id,id);
