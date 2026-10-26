@@ -356,6 +356,12 @@ class CoreTests(unittest.TestCase):
         self.assertGreater(board["outstanding_cents"], 0)
         self.assertEqual(self.client.get("/api/not-an-endpoint").status_code, 404)
 
+    def test_seed_applicant_sees_only_self_applications(self):
+        self.login("applicant")
+        permits = self.client.get("/api/permits").json()["items"]
+        self.assertEqual(len(permits), 4)
+        self.assertTrue(all(permit["applicant_id"] == 1 for permit in permits))
+
     def test_staff_creation_assigns_provisioned_applicant(self):
         permit = self.create()
         self.login("applicant")

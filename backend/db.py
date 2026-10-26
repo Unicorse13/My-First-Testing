@@ -132,10 +132,11 @@ def seed_demo():
             date = (timestamp - timedelta(days=ident)).isoformat()
             fee = rates[kind][0] + area * rates[kind][1]
             db.execute(
-                "INSERT INTO permits(id,number,municipality_id,owner_id,applicant_id,contractor_id,type,status,description,work_address,area_sqft,prior_approval,fee_cents,created_at,updated_at) VALUES (?,?,1,5,?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO permits(id,number,municipality_id,owner_id,applicant_id,contractor_id,type,status,description,work_address,area_sqft,prior_approval,fee_cents,created_at,updated_at) VALUES (?,?,1,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (
                     ident,
                     f"DEMO-2026-{ident:04d}",
+                    5 if (ident - 1) % 3 == 0 else 2,
                     (ident - 1) % 3 + 1,
                     2 if kind == "electrical" else 1,
                     kind,
