@@ -28,10 +28,10 @@ These guides are the source for the **documented** column below. A feature being
 | Architects/Engineers | Optional, records may be added during application | Not yet modeled; no fictitious professional registry implied |
 | Block/Lot | Preloaded from Taxation/local assessor data; local edits do not routinely update assessor records | Work-site address only; no parcel import, assessor data or writeback |
 | Contractors | DCA conversion of local UCCARS contractor file; ongoing application additions | Synthetic directory list/create; no UCCARS conversion or license verification |
-| Building Fee Schedules | Required; separate schedules where ordinance varies by use group | Partial version lifecycle; sample application calculation is separate; use-group engine deferred |
+| Building Fee Schedules | Required; separate schedules where ordinance varies by use group | Partial version lifecycle and effective fixed/per-square-foot assessment, including building use-group variants; no full UCC engine |
 | Electrical Fee Schedules | Required | Partial version lifecycle; official UCC lines/rates not supplied |
-| Elevator Fee Schedules | Required | Partial version lifecycle; elevator permit technical application/calculation not implemented |
-| Fire Protection Fee Schedules | Required | Partial version lifecycle; fire technical application/calculation not implemented |
+| Elevator Fee Schedules | Required | Partial version lifecycle and explicit fixed/per-square-foot assessment; detailed elevator technical application not implemented |
+| Fire Protection Fee Schedules | Required | Partial version lifecycle and explicit fixed/per-square-foot assessment; detailed fire technical application not implemented |
 | Plumbing Fee Schedules | Required | Partial version lifecycle; official UCC lines/rates not supplied |
 | Inspection Types | Preloaded and DCA-maintained | Generic demo inspection/result; no official type feed |
 | Interlocal Offices | Preloaded and DCA-maintained | Inventoried only; no authority/office hierarchy integration |
@@ -61,7 +61,7 @@ Municipality-level isolation is implemented for operational records. The guide's
 | Third-party percent of state fees plus administrative surcharge at most 15% | Documented requirement and limitation | DCA fee source, contract, current statute confirmation and calculation integration unavailable |
 | 100% state fees; clear field to make local changes | Deferred | No authoritative state-rate feed; sample data cannot substitute for it |
 
-Fee-schedule maintenance is a partial workflow separate from the provisional building/electrical/plumbing fee calculation used on permits. Activating a demonstration schedule must not be presented as reproducing the historical automatic fee engine.
+Activated effective schedules now drive the limited fixed/per-square-foot permit assessment, including building use-group variants. Assessment amount and schedule reference are retained; relevant application edits, exemption removal and municipality transfer reassess under current applicable rules. Explicit demo mode may fall back to provisional building/electrical/plumbing rates when no schedule matches; elevator/fire protection and non-demo operation require a schedule. This subset does not reproduce the historical UCC tier/basis/group engine or establish official rate validity.
 
 ## Focused follow-up inputs
 

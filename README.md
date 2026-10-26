@@ -68,6 +68,8 @@ Backend tests create temporary databases and exercise API behavior. The test com
 
 ## Data and configuration
 
-Numbered SQL files in `backend/migrations/` define the relational schema. Migration application is recorded in the database during backend initialization. Keep the database on persistent storage and back it up before deployment or migration. Fee amounts use integer cents; no floating-point currency is stored. Sessions use opaque cookies; passwords are salted scrypt hashes. Do not copy demo credentials or settings into production deployment configuration.
+Numbered SQL files in `backend/migrations/` define the relational schema. Migration application is recorded in the database during backend initialization. Keep the database on persistent storage and back it up before deployment or migration. Fee amounts use integer cents; no floating-point currency is stored. Activated effective fee schedules support a limited fixed/per-square-foot calculation with minima/maxima and optional building use-group variants. The permit retains its assessed amount and schedule ID; activating a later version does not silently change historical assessments. Only explicit demo mode supplies fallback building/electrical/plumbing sample fees; elevator/fire protection and non-demo assessments require a matching schedule. No full UCC tier/basis engine is claimed.
+
+Sessions use opaque cookies; passwords are salted scrypt hashes. Non-demo startup rejects a database containing the public demo accounts; use a separate clean database when provisioning real users. Do not copy demo credentials or settings into production deployment configuration.
 
 Each cloud task already has an isolated checkout; use that checkout rather than creating Git worktrees unless specifically requested. Install dependencies from the lockfile and start processes afresh when a cloud environment is restored; live servers are not part of its filesystem snapshot.

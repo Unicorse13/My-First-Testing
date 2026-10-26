@@ -12,8 +12,9 @@ No external integrations or production credentials are available. Payments use a
 
 ## Proposed demonstration rules (not law)
 
-- Building fee: $150 + $0.25 per square foot; electrical $75; plumbing $90. These provisional sample rules do not implement the documented UCC tier/basis engine. Explicit staff exemption requires a reason. Editing an eligible application recalculates its fee under the sample rule and cannot reduce it below payments already posted; issued/closed fees cannot be edited.
-- Status graph: draft → submitted → under_review → approved → issued → closed. Submission requires prior approval; approval requires an approved plan review; issuance requires payment in full; closure requires a passed inspection. Status definitions are stored as configuration data. Only admins change the graph.
+- Permit assessments resolve the latest active, effective municipality/subcode schedule, with a building use-group variant where selected. The limited demonstration engine supports fixed/per-square-foot line items and line/schedule minima/maxima, not the documented full UCC tier/basis engine. Only explicit demo mode may fall back to building $150 + $0.25 per square foot, electrical $75, or plumbing $90; elevator/fire protection require a configured schedule. Non-demo operation has no invented rate fallback.
+- Assessment amount and schedule ID are retained on the permit. Unrelated edits preserve the amount; changing type, area or use group, removing an exemption, or transferring to another municipality reassesses under the applicable current schedule. Fees cannot be reduced below payments already posted; issued/closed fees cannot be edited. Staff exemption requires a reason and cannot carry across a transfer.
+- Default status graph: draft → submitted → under_review → approved → issued → closed. Submission requires prior approval; approval requires an approved plan review; issuance requires payment in full; closure requires a passed inspection. Administrators configure municipality-scoped graph overrides; checks on canonical approval/issuance/closure targets remain enforced.
 - Applicants see and edit only their own draft applications and can submit and make mock payments. Staff have municipality-scoped access. Reviewers record plan reviews; inspectors record inspections; clerks/admins manage records and certificates/notices. Cross-municipality transfers require admin and an explicit destination; ownership and linked party records must remain valid in the destination.
 - Payment requests require an idempotency key, reject overpayment, and atomically update history and audit. Mock declines never create successful payments. Reconciliation records a separate audited staff confirmation.
 - A certificate requires an issued/closed permit, full payment, and a passed inspection. Revocation retains history. Notices require a deadline and track open/resolved status.
@@ -35,7 +36,7 @@ All rows are requested new workflows; no pre-existing implementation was found.
 | Reports/audit | Date/municipality filters, summary, CSV, immutable audit records | Export and totals tests |
 | UX/support | Responsive dashboard/navigation, accessible forms, empty/errors/loading, print and demo feedback | Build/type checks plus browser smoke tests |
 | Historical reference tables | Show documented inventory and distinguish DCA-maintained inputs from municipality-maintained data | Inventory matches S-01 and identifies unavailable feeds |
-| Historical fee maintenance | Partial demonstration schedule versions across five subcodes, copy, print/review and activation | API tests of version lifecycle and tenant isolation; explicitly no UCC engine parity |
+| Historical fee maintenance | Partial demonstration schedule versions across five subcodes, copy, print/review, activation and effective-date fixed/per-unit assessment | API tests of version lifecycle, assessment, snapshots and tenant isolation; explicitly no UCC engine parity |
 
 ## Phases and acceptance criteria
 

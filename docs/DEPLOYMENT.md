@@ -33,6 +33,8 @@ python -m backend.manage create-user --email staff@example.test --name "Example 
 
 Use the municipality ID reported by the first command. This CLI supplies initial records, not a complete production identity lifecycle or an approval process. Access to the database and host is administrative access; restrict it accordingly.
 
+Non-demo startup rejects a database containing the public demonstration accounts; create a separate clean database instead of relabeling a demo instance as production. Before a non-demo permit assessment can succeed, an administrator must create/review/activate an effective matching fee schedule. No official default rates are bundled. The delivered engine supports only explicit fixed/per-square-foot line items, not full UCC tier/basis calculations; approved municipal rules and complete-engine requirements remain prerequisites to real use.
+
 ## Before handling real information
 
 - Approve municipal roles, transfer authority, status transitions, fees/exemptions, retention rules and official document wording with the responsible municipality.
