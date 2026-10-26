@@ -111,9 +111,25 @@ async def security_controls(request: Request, call_next):
                 and urlsplit(origin).scheme == request.url.scheme
             )
             if origin and not same_origin and origin.rstrip("/") != allowed:
-                logger.warning("Rejected cross-origin mutation path=%s", request.url.path)
+                logger.warning(
+                    "Rejected cross-origin mutation path=%s origin=%r expected=%r host=%r scheme=%r",
+                    request.url.path,
+                    origin,
+                    allowed,
+                    request.headers.get("host"),
+                    request.url.scheme,
+                )
                 return JSONResponse(
-                    {"detail": "Cross-origin requests are not allowed."}, status_code=403
+                    {
+                        "detail": (
+                            "Cross-origin requests are not allowed. "
+                            f"Expected browser address: {allowed or '(not configured)'}. "
+                            f"Received origin: {origin}. Server host: {request.headers.get('host')}."
+                        )
+                        if demo_mode()
+                        else "Cross-origin requests are not allowed."
+                    },
+                    status_code=403,
                 )
             if request.url.path != "/api/auth/login":
                 try:
