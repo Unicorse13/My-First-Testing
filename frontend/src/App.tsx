@@ -1401,9 +1401,14 @@ function PermitDetail({
     /* malformed configuration shows no transitions */
   }
   if (user.role === "applicant")
-    nextStatuses = permit?.status === "draft" ? nextStatuses.filter((s) => s === "submitted") : [];
+    nextStatuses =
+      permit?.status === "draft"
+        ? nextStatuses.filter((s) => s === "submitted")
+        : [];
   else if (user.role === "reviewer")
-    nextStatuses = nextStatuses.filter(s => ["under_review", "approved"].includes(s));
+    nextStatuses = nextStatuses.filter((s) =>
+      ["under_review", "approved"].includes(s),
+    );
   else if (!canManage) nextStatuses = [];
   const paymentKey = `permitsnj-payment-${user.id}-${id}`;
   function getPaymentKey(amountCents: number, simulateFailure: boolean) {
@@ -1415,7 +1420,7 @@ function PermitDetail({
       key = crypto.randomUUID();
       sessionStorage.setItem(fingerprint, key);
     }
-    return {key, fingerprint};
+    return { key, fingerprint };
   }
   const actionFields: Record<string, Field[]> = {
     payment: [
@@ -1674,7 +1679,10 @@ function PermitDetail({
                   </dl>
                 </div>
                 <div className="form-actions">
-                  {((canManage && ["draft", "submitted", "under_review"].includes(permit.status)) ||
+                  {((canManage &&
+                    ["draft", "submitted", "under_review"].includes(
+                      permit.status,
+                    )) ||
                     (user.role === "applicant" &&
                       permit.status === "draft")) && (
                     <button
@@ -1933,7 +1941,10 @@ function PermitDetail({
               onSubmit={async (v) => {
                 if (action === "payment") {
                   const amountCents = Math.round(Number(v.amount) * 100);
-                  const attempt = getPaymentKey(amountCents, Boolean(v.simulate_failure));
+                  const attempt = getPaymentKey(
+                    amountCents,
+                    Boolean(v.simulate_failure),
+                  );
                   await api(`/permits/${id}/payments`, "POST", {
                     amount_cents: amountCents,
                     simulate_failure: v.simulate_failure,
