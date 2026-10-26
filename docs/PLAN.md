@@ -2,7 +2,7 @@
 
 ## Inspection and scope
 
-The initial checkout contains only Git metadata: no commits, source, schema, screenshots, business rules, CI, or integrations. No existing feature parity can be claimed. This is a new demonstration implementation, not a verified New Jersey regulatory system. All people, addresses, municipalities, payments, and forms are synthetic.
+The initial checkout contained only Git metadata: no commits, source, schema, CI, or integrations. During implementation the user supplied three historical PermitsNJ guides: G-02 (2004), S-01 (2007), and S-02 (2009). They establish documented navigation, role/reference table dependencies and fee-schedule maintenance workflows. Their inventory and mapping are recorded in [REFERENCES.md](REFERENCES.md). No current source, database schema, complete UCC templates, S-A2 fee basis chart, municipal ordinance or live integration contract was supplied. Existing feature parity cannot be claimed. All people, addresses, municipalities, payments, and forms remain synthetic.
 
 ## Architecture
 
@@ -12,7 +12,7 @@ No external integrations or production credentials are available. Payments use a
 
 ## Proposed demonstration rules (not law)
 
-- Building fee: $150 + $0.25 per square foot; electrical $75; plumbing $90. Explicit staff exemption requires a reason. Historical assessed fees remain fixed until staff explicitly reassess.
+- Building fee: $150 + $0.25 per square foot; electrical $75; plumbing $90. These provisional sample rules do not implement the documented UCC tier/basis engine. Explicit staff exemption requires a reason. Editing an eligible application recalculates its fee under the sample rule and cannot reduce it below payments already posted; issued/closed fees cannot be edited.
 - Status graph: draft → submitted → under_review → approved → issued → closed. Submission requires prior approval; approval requires an approved plan review; issuance requires payment in full; closure requires a passed inspection. Status definitions are stored as configuration data. Only admins change the graph.
 - Applicants see and edit only their own draft applications and can submit and make mock payments. Staff have municipality-scoped access. Reviewers record plan reviews; inspectors record inspections; clerks/admins manage records and certificates/notices. Cross-municipality transfers require admin and an explicit destination; ownership and linked party records must remain valid in the destination.
 - Payment requests require an idempotency key, reject overpayment, and atomically update history and audit. Mock declines never create successful payments. Reconciliation records a separate audited staff confirmation.
@@ -34,6 +34,8 @@ All rows are requested new workflows; no pre-existing implementation was found.
 | Notices/orders | Issue, deadline, resolve and print | Lifecycle and document tests |
 | Reports/audit | Date/municipality filters, summary, CSV, immutable audit records | Export and totals tests |
 | UX/support | Responsive dashboard/navigation, accessible forms, empty/errors/loading, print and demo feedback | Build/type checks plus browser smoke tests |
+| Historical reference tables | Show documented inventory and distinguish DCA-maintained inputs from municipality-maintained data | Inventory matches S-01 and identifies unavailable feeds |
+| Historical fee maintenance | Partial demonstration schedule versions across five subcodes, copy, print/review and activation | API tests of version lifecycle and tenant isolation; explicitly no UCC engine parity |
 
 ## Phases and acceptance criteria
 
@@ -46,4 +48,4 @@ All rows are requested new workflows; no pre-existing implementation was found.
 
 ## Missing requirements and production risks
 
-Municipal fee schedules, statutory approvals/forms, retention and accessibility policies, identity/SSO, staff provisioning, cross-town transfer authority, payment/refund/chargeback rules, provider API, official certificate signatures, notification channels, document scanning/storage and hosting targets remain unspecified. Demo rules must not be interpreted as production policy. Production use needs independent security/legal review, TLS, identity lifecycle/MFA, backup restoration drills, approved payment provider, monitoring, and load testing. No real email, card processing, official government forms or external data exchange is represented as implemented.
+Current municipal fee ordinances, the full UCC line-item template, S-A1 worksheets and S-A2 fee-basis definitions, DCA reference/rate feeds, statutory approvals/forms, retention and accessibility policies, identity/SSO, cross-town transfer authority, payment/refund/chargeback rules, provider API, official certificate signatures, notification channels, document scanning/storage and hosting targets remain unspecified. The supplied guides are historical evidence, not a confirmation of current law or production requirements. Demo rules must not be interpreted as production policy. Production use needs independent security/legal review, TLS, identity lifecycle/MFA, backup restoration drills, approved payment provider, monitoring, and load testing. No real portal authentication, email, card processing, official government forms or external data exchange is represented as implemented.

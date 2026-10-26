@@ -75,3 +75,20 @@ Reviewers/admins record plan reviews. Clerks/admins schedule inspections; the as
 - `GET /audit` returns recent scoped audit entries for staff.
 
 Date filters are report selection criteria; they do not turn permit totals into provider settlement statements. A municipality filter cannot widen the user's authority. No raw payment card information, email sending or external government service is supported.
+
+## Historical reference and partial fee maintenance
+
+These endpoints preserve a limited subset of the historical S-01/S-02 maintenance workflow. They do not reproduce UCC basis/tier mathematics, official state rates or MyNewJersey integration. See [the complete reference mapping](REFERENCES.md).
+
+| Method | Route | Purpose |
+|---|---|---|
+| GET | `/reference-tables` | Staff inventory identifying incomplete reference-table support |
+| GET, POST | `/fee-schedules` | List/create municipality-scoped schedule versions |
+| GET, PATCH | `/fee-schedules/{id}` | Read schedule / edit draft metadata |
+| POST | `/fee-schedules/{id}/items` | Append an ordered demonstration line item |
+| PATCH | `/fee-schedules/{id}/items/{position}` | Edit an existing line without reordering |
+| POST | `/fee-schedules/{id}/copy` | Create a new draft with `{effective_date}` |
+| POST | `/fee-schedules/{id}/activate` | Administrator review confirmation `{confirmed_review:true}` |
+| GET | `/fee-schedules/{id}/document` | Authorized printable HTML schedule |
+
+Five subcodes are available: building, electrical, elevator, fire protection and plumbing. Building schedules can retain a use-group label. Schedule metadata includes effective date, ordinance citation and optional minimum/maximum cents. Demonstration line bases are restricted to `fixed` and `per_unit`, with integer-cent amounts and optional line minima. Authoritative UCC line items, S-A2 basis definitions, tier/range/group calculation and state-rate percentages are unavailable. Active versions are immutable; copy to a new effective-date draft before amendment. Clerks/admins maintain drafts; only admins activate. Staff reads and writes remain municipality-scoped.

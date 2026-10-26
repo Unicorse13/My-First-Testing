@@ -1,8 +1,8 @@
 # PermitsNJ
 
-A full-stack **demonstration** of municipal permit management. React/TypeScript runs against a same-origin FastAPI API and persistent SQLite database. Every seeded person, municipality, property, payment and document is fictional. Fees and workflow rules are illustrative, not New Jersey legal requirements. No legacy source, schema or reference screens were available, so existing-system feature parity is not claimed.
+A full-stack **demonstration** of municipal permit management. React/TypeScript runs against a same-origin FastAPI API and persistent SQLite database. Every seeded person, municipality, property, payment and document is fictional. Fees and workflow rules are illustrative, not New Jersey legal requirements. Three historical user/setup guides supplied during implementation inform the [reference inventory](docs/REFERENCES.md); no legacy source or database schema was supplied, and existing-system feature parity is not claimed.
 
-See [implementation scope and limitations](docs/IMPLEMENTATION.md), [API reference](docs/API.md), [deployment and recovery](docs/DEPLOYMENT.md), and the original [architecture and acceptance plan](docs/PLAN.md).
+See [implementation scope and limitations](docs/IMPLEMENTATION.md), [reference-to-implementation mapping](docs/REFERENCES.md), [API reference](docs/API.md), [deployment and recovery](docs/DEPLOYMENT.md), and the [architecture and acceptance plan](docs/PLAN.md).
 
 ## Local setup
 

@@ -1,6 +1,6 @@
 # Scope, assumptions and remaining work
 
-This file describes the delivery boundary. The initial repository was empty; no existing workflow, schema or integration could be verified. `PLAN.md` records proposed behavior and acceptance criteria. Delivered test output is the authority for what was verified; planned items are not evidence that an implementation works.
+This file describes the delivery boundary. The initial repository was empty. Three historical guides supplied during implementation document navigation, reference data and fee-maintenance workflows; [REFERENCES.md](REFERENCES.md) maps those requirements to the demonstration and its gaps. No original source, database schema or integration contract was provided. `PLAN.md` records proposed behavior and acceptance criteria. Delivered test output is the authority for what was verified; planned items are not evidence that an implementation works.
 
 ## Demonstration behavior
 
@@ -23,7 +23,10 @@ Payment reconciliation means a staff confirmation in this demonstration. No prov
 
 | Area | Remaining requirement |
 |---|---|
-| Existing-system parity | Supply verified reference source, schemas, screens and workflow rules; none were available. |
+| Existing-system parity | Historical G-02/S-01/S-02 guides were supplied. Original source/schema, remaining workflow guides and current requirements are needed to assess parity. |
+| Reference-table administration | Architects/engineers, block/lot, use groups, official staffing, interlocal/state offices, inspection types, third-party agencies and DCA-maintained tables are inventoried; their full maintenance/import workflows are not implemented. |
+| Fee schedule engine | Partial version maintenance is separate from sample permit calculation. Full UCC templates, S-A2 basis chart, tier/group math, use-group variants, official DCA rates and ordinance validation remain unavailable. |
+| Portal authentication | MyNewJersey registration, authentication codes and role-manager integration documented by G-02 have no supplied API/credentials and are not integrated. |
 | Statutory rules | Confirm NJ/municipal fee schedules, permit types, approvals, exemptions, notices, certificate wording and retention. |
 | Configuration | Core demo status transitions are protected; custom status records are available, but arbitrary replacement of the guarded workflow and a municipality-specific rule administration UI remain outside this delivery. |
 | Transfers | Only unpaid draft/submitted records without reviews or inspections can transfer; moving issued permits and their official history requires approved rules. |
