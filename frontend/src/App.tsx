@@ -1401,16 +1401,21 @@ function PermitDetail({
     /* malformed configuration shows no transitions */
   }
   if (user.role === "applicant")
-    nextStatuses = nextStatuses.filter((s) => s === "submitted");
-  if (!canManage && user.role !== "applicant") nextStatuses = [];
-  const paymentKey = `permitsnj-payment-${id}`;
-  function getPaymentKey() {
-    let key = sessionStorage.getItem(paymentKey);
+    nextStatuses = permit?.status === "draft" ? nextStatuses.filter((s) => s === "submitted") : [];
+  else if (user.role === "reviewer")
+    nextStatuses = nextStatuses.filter(s => ["under_review", "approved"].includes(s));
+  else if (!canManage) nextStatuses = [];
+  const paymentKey = `permitsnj-payment-${user.id}-${id}`;
+  function getPaymentKey(amountCents: number, simulateFailure: boolean) {
+    // Preserve every uncertain attempt by payload: retries reuse the same key,
+    // while a deliberately changed amount/decline selection starts a new attempt.
+    const fingerprint = `${paymentKey}:${amountCents}:${simulateFailure}`;
+    let key = sessionStorage.getItem(fingerprint);
     if (!key) {
       key = crypto.randomUUID();
-      sessionStorage.setItem(paymentKey, key);
+      sessionStorage.setItem(fingerprint, key);
     }
-    return key;
+    return {key, fingerprint};
   }
   const actionFields: Record<string, Field[]> = {
     payment: [
@@ -1669,7 +1674,7 @@ function PermitDetail({
                   </dl>
                 </div>
                 <div className="form-actions">
-                  {(canManage ||
+                  {((canManage && ["draft", "submitted", "under_review"].includes(permit.status)) ||
                     (user.role === "applicant" &&
                       permit.status === "draft")) && (
                     <button
@@ -1927,12 +1932,14 @@ function PermitDetail({
               onCancel={() => setAction("")}
               onSubmit={async (v) => {
                 if (action === "payment") {
+                  const amountCents = Math.round(Number(v.amount) * 100);
+                  const attempt = getPaymentKey(amountCents, Boolean(v.simulate_failure));
                   await api(`/permits/${id}/payments`, "POST", {
-                    amount_cents: Math.round(Number(v.amount) * 100),
+                    amount_cents: amountCents,
                     simulate_failure: v.simulate_failure,
-                    idempotency_key: getPaymentKey(),
+                    idempotency_key: attempt.key,
                   });
-                  sessionStorage.removeItem(paymentKey);
+                  sessionStorage.removeItem(attempt.fingerprint);
                 } else if (action === "review")
                   await api(`/permits/${id}/plan-reviews`, "POST", v);
                 else if (action === "inspection")
