@@ -19,6 +19,14 @@ if [[ -n "${CODESPACE_NAME:-}" ]]; then
   export APP_ORIGIN="https://${demo_hostname}"
   export SESSION_SECURE=true
 fi
+# An explicit browser address survives restarts and proxy/domain variations.
+if [[ -f data/public-origin.txt ]]; then
+  APP_ORIGIN="$(cat data/public-origin.txt)"
+  export APP_ORIGIN
+  demo_hostname="$(.venv/bin/python -c 'import os; from urllib.parse import urlsplit; print(urlsplit(os.environ["APP_ORIGIN"]).netloc)')"
+  export ALLOWED_HOSTS="localhost,127.0.0.1,${demo_hostname}"
+  export SESSION_SECURE=true
+fi
 # Reuse only a verified PermitsNJ demo; fail if another service occupies port 8000.
 port_state="$(.venv/bin/python - <<'PY'
 import json
