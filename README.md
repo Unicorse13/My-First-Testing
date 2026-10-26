@@ -57,12 +57,18 @@ No card fields or real transaction endpoints exist. Payment failures can be simu
 
 ```bash
 . .venv/bin/activate
+ruff check backend
+ruff format --check backend
 python -m unittest discover -s backend/tests -v
 cd frontend
 npm run typecheck
 npm run lint
 npm run build
 ```
+
+Backend dependencies are pinned through `constraints.txt`; frontend dependencies use `package-lock.json`. GitHub Actions runs backend checks and the frontend production build when these commits are pushed. The workflow has been added but has not been executed on GitHub.
+
+See [browser test instructions and verification results](docs/QA.md) for the optional Playwright suite.
 
 Backend tests create temporary databases and exercise API behavior. The test command must report actual executed tests; a zero-test result is not validation. Frontend checks establish code/build health; they do not substitute for browser, accessibility or municipal acceptance testing. Refer to the delivered verification report for the checks actually run.
 

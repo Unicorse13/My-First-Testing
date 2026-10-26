@@ -1,4 +1,6 @@
-# Internal implementation contract
+# Initial internal implementation contract
+
+This records the initial coordination baseline. The shipped API includes municipality-scoped status overrides, five fee subcodes, effective fee schedules, optional `use_group`, and `assessed_schedule_id` snapshots. See [API.md](API.md) and [IMPLEMENTATION.md](IMPLEMENTATION.md) for the final behavior; the original three-type schema description below is historical.
 
 All API routes below use `/api`; JSON uses snake_case; monetary values are integer cents. Errors use `{detail: string}`. Cookie `permits_session`; GET `/auth/me` returns `{user, csrf_token, demo: true}`. Login body `{email,password}` returns same; logout POST requires CSRF. Mutations include `X-CSRF-Token`. User: `{id,name,email,role,municipality_id}`. Roles admin, clerk, reviewer, inspector, applicant. GET `/health` public.
 
