@@ -474,11 +474,19 @@ export default function App() {
       .finally(() => setReady(true));
   }, []);
   useEffect(() => {
+    let active = true;
     if (session)
       api<Config>("/config")
-        .then(setConfig)
-        .catch((e) => setGlobalError(e.message));
+        .then((value) => {
+          if (active) setConfig(value);
+        })
+        .catch((e) => {
+          if (active) setGlobalError(e.message);
+        });
     else setConfig(null);
+    return () => {
+      active = false;
+    };
   }, [session, refresh]);
   useEffect(() => {
     if (!toast) return;
@@ -489,8 +497,19 @@ export default function App() {
     setRefresh((x) => x + 1);
     setToast(message);
   }
+  function changeSession(next: Session | null) {
+    setConfig(null);
+    setPage("Dashboard");
+    setPermitId(null);
+    setCreate(false);
+    setSupport(false);
+    setOpen(false);
+    setGlobalError("");
+    setToast("");
+    setSession(next);
+  }
   if (!ready) return <Loading />;
-  if (!session) return <Login onLogin={setSession} />;
+  if (!session) return <Login onLogin={changeSession} />;
   const user = session.user,
     staff = staffRoles.includes(user.role);
   return (
@@ -576,7 +595,7 @@ export default function App() {
               onClick={async () => {
                 try {
                   await api("/auth/logout", "POST", {});
-                  setSession(null);
+                  changeSession(null);
                 } catch (e) {
                   setGlobalError((e as Error).message);
                 }
@@ -1231,12 +1250,14 @@ function PermitForm({
 }) {
   const [applicants, setApplicants] = useState<Row[]>([]),
     [contractors, setContractors] = useState<Row[]>([]),
+    [loaded, setLoaded] = useState(false),
     [error, setError] = useState("");
   useEffect(() => {
     Promise.all([api<Row[]>("/applicants"), api<Row[]>("/contractors")])
       .then(([a, c]) => {
         setApplicants(a);
         setContractors(c);
+        setLoaded(true);
       })
       .catch((e) => setError(e.message));
   }, []);
@@ -1311,24 +1332,28 @@ function PermitForm({
       onClose={onClose}
     >
       <ErrorBox message={error} />
-      <Form
-        fields={fields}
-        submitLabel={permit ? "Save permit" : "Create draft permit"}
-        onCancel={onClose}
-        onSubmit={async (v) => {
-          const p = await api<Permit>(
-            permit ? `/permits/${permit.id}` : "/permits",
-            permit ? "PATCH" : "POST",
-            {
-              ...v,
-              applicant_id: Number(v.applicant_id),
-              contractor_id: v.contractor_id ? Number(v.contractor_id) : null,
-              area_sqft: Number(v.area_sqft),
-            },
-          );
-          onSaved(p.id);
-        }}
-      />
+      {!loaded ? (
+        <Loading />
+      ) : (
+        <Form
+          fields={fields}
+          submitLabel={permit ? "Save permit" : "Create draft permit"}
+          onCancel={onClose}
+          onSubmit={async (v) => {
+            const p = await api<Permit>(
+              permit ? `/permits/${permit.id}` : "/permits",
+              permit ? "PATCH" : "POST",
+              {
+                ...v,
+                applicant_id: Number(v.applicant_id),
+                contractor_id: v.contractor_id ? Number(v.contractor_id) : null,
+                area_sqft: Number(v.area_sqft),
+              },
+            );
+            onSaved(p.id);
+          }}
+        />
+      )}
     </Modal>
   );
 }
