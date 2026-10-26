@@ -123,10 +123,12 @@ function Modal({
   useEffect(() => {
     const previous = document.activeElement as HTMLElement;
     const key = (e: KeyboardEvent) => {
+      const dialogs = document.querySelectorAll('[role="dialog"]');
+      if (dialogs[dialogs.length - 1] !== root.current) return;
       if (e.key === "Escape") closeRef.current();
       if (e.key === "Tab") {
         const els = root.current?.querySelectorAll<HTMLElement>(
-          "button,input,select,textarea,a[href]",
+          "button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href]",
         );
         if (!els?.length) return;
         const first = els[0],
@@ -493,6 +495,9 @@ export default function App() {
     staff = staffRoles.includes(user.role);
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
       {open && <div className="mobile-scrim" onClick={() => setOpen(false)} />}
       <aside className={`sidebar ${open ? "open" : ""}`}>
         <a
