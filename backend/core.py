@@ -217,9 +217,9 @@ def permits(
 ):
     where, args = scope(user)
     if q:
-        escaped = q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-        where += " AND (p.number LIKE ? ESCAPE '\\' COLLATE NOCASE OR p.work_address LIKE ? ESCAPE '\\' COLLATE NOCASE OR a.name LIKE ? ESCAPE '\\' COLLATE NOCASE OR p.description LIKE ? ESCAPE '\\' COLLATE NOCASE)"
-        args.extend([f"%{escaped}%"] * 4)
+        # Unicode-aware literal substring search: %, _ and quotes stay data, not SQL patterns.
+        where += " AND (instr(unicode_fold(p.number),unicode_fold(?))>0 OR instr(unicode_fold(p.work_address),unicode_fold(?))>0 OR instr(unicode_fold(a.name),unicode_fold(?))>0 OR instr(unicode_fold(p.description),unicode_fold(?))>0)"
+        args.extend([q] * 4)
     if status:
         where += " AND p.status=?"
         args.append(status)

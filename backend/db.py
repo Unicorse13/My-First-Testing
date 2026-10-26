@@ -22,6 +22,9 @@ def connect():
     path.parent.mkdir(parents=True, exist_ok=True)
     db = sqlite3.connect(str(path), timeout=15, factory=Connection)
     db.row_factory = sqlite3.Row
+    db.create_function(
+        "unicode_fold", 1, lambda value: str(value or "").casefold(), deterministic=True
+    )
     db.execute("PRAGMA foreign_keys=ON")
     db.execute("PRAGMA busy_timeout=15000")
     return db

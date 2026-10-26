@@ -155,6 +155,13 @@ class CoreTests(unittest.TestCase):
         )
         self.assertEqual(self.client.get("/api/permits", params={"q": "%"}).json()["total"], 0)
 
+    def test_unicode_partial_search(self):
+        self.create(description="Synthetic Café Straße permit")
+        for query in ("CAFÉ", "STRASSE", "café str"):
+            result = self.client.get("/api/permits", params={"q": query})
+            self.assertEqual(result.status_code, 200)
+            self.assertEqual(result.json()["total"], 1)
+
     def test_edit_recalculate_and_audit(self):
         permit = self.create()
         result = self.client.patch(
