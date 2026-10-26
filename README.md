@@ -4,6 +4,10 @@ A full-stack **demonstration** of municipal permit management. React/TypeScript 
 
 See [implementation scope and limitations](docs/IMPLEMENTATION.md), [reference-to-implementation mapping](docs/REFERENCES.md), [API reference](docs/API.md), [deployment and recovery](docs/DEPLOYMENT.md), and the [architecture and acceptance plan](docs/PLAN.md).
 
+## Try it in a browser (no Windows installation)
+
+Open [the GitHub project](https://github.com/Unicorse13/My-First-Testing), select **Code → Codespaces → Create codespace on main**, and wait for the automatic setup. The app should open automatically; otherwise use **Ports → 8000 → Open in Browser**. Click **Enter demo workspace** to sign in. See [the browser guide](docs/TRY-DEMO.md) for details. Codespaces access and usage allowance are required.
+
 ## Local setup
 
 Prerequisites: Python 3.12+, Node.js 22.12+ and npm. Commands below run from the repository root.

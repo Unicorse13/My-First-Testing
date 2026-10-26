@@ -1,0 +1,20 @@
+{
+  "name": "PermitsNJ browser demo",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    }
+  },
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "PermitsNJ — open application",
+      "onAutoForward": "openBrowser",
+      "protocol": "http"
+    }
+  },
+  "postCreateCommand": "bash scripts/setup-demo.sh",
+  "postStartCommand": "bash scripts/start-demo.sh",
+  "remoteUser": "vscode"
+}

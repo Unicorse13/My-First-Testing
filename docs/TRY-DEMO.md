@@ -11,7 +11,7 @@ Try creating a permit, confirming prior approvals, submitting it for review, rec
 
 Your test records stay in that codespace when you stop and restart it. Deleting the codespace deletes its local test database. When finished, visit [Your codespaces](https://github.com/codespaces), open the menu beside this codespace, and choose **Stop codespace**. You can return there to resume it later.
 
-If GitHub reports that Codespaces is unavailable, asks you to enable billing, or your work network blocks it, stop and share the message so a different testing route can be selected. Do not enter payment information just to try this demonstration.
+If GitHub reports that Codespaces is unavailable or your work network blocks it, share the message so a different testing route can be selected.
 
 The repository contains automatic setup and startup configuration. A running hosted codespace and its browser URL are created only when you complete the GitHub step above; this document does not establish that a hosted instance has already been created or verified.
 
