@@ -15,10 +15,12 @@ cd ..
 export DATABASE_PATH=/absolute/persistent/path/permitsnj.sqlite3
 export DEMO_MODE=false
 export SESSION_SECURE=true
+export ALLOWED_HOSTS=permits.example.test
+export APP_ORIGIN=https://permits.example.test
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 ```
 
-Use a service manager to restart the process, capture logs, and stop it cleanly. Set the working directory to the repository root. Restrict database and backup files to the service account. Keep configuration in the deployment platform's secure environment settings. The repository does not load `.env` automatically. Do not place secrets in command history, frontend build variables, source control, logs or browser storage.
+Replace the example hostname/origin with your actual trusted browser origin. `ALLOWED_HOSTS` is a comma-separated hostname allowlist; `APP_ORIGIN` is an exact trusted browser origin for mutation checks when a proxy changes the backend's observed scheme/host. Configure forwarded headers only from your trusted proxy. Use a service manager to restart the process, capture logs, and stop it cleanly. Set the working directory to the repository root. Restrict database and backup files to the service account. Keep configuration in the deployment platform's secure environment settings. The repository does not load `.env` automatically. Do not place secrets in command history, frontend build variables, source control, logs or browser storage.
 
 This is not a turnkey production release. Identity lifecycle, MFA/SSO, statutory forms and fee schedules, approved payment integration, document storage/scanning and operational review are outstanding. A fresh non-demo database does not automatically create login accounts. Do not enable demo mode as a shortcut to provisioning real staff.
 

@@ -22,7 +22,7 @@ export DATABASE_PATH=./data/permitsnj.sqlite3
 python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
 ```
 
-Open the application's port 8000 using your development platform's supported port forwarding. The backend serves the production frontend build. The first demo startup applies migrations and creates synthetic records; subsequent starts reuse the database. `.env.example` documents settings; the backend does not automatically load `.env` files. The `data/` directory and local configuration are ignored by Git. Do not commit database files or secrets.
+Open the application's port 8000 using your development platform's supported port forwarding. The backend serves the production frontend build. If forwarding uses a hostname other than `localhost` or `127.0.0.1`, add that exact hostname to comma-separated `ALLOWED_HOSTS` before startup. Do not use a wildcard for a public deployment. The first demo startup applies migrations and creates synthetic records; subsequent starts reuse the database. `.env.example` documents settings; the backend does not automatically load `.env` files. The `data/` directory and local configuration are ignored by Git. Do not commit database files or secrets.
 
 For frontend hot reload, keep the backend running and run `npm run dev -- --host 0.0.0.0` from `frontend/`. Vite proxies `/api` requests to backend port 8000. Use the same browser origin throughout a session.
 
