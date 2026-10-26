@@ -14,7 +14,7 @@ npm run typecheck
 npm run build
 ```
 
-The final backend run passed 45 tests. The backend suites exercise actual HTTP routes against temporary SQLite databases: session/CSRF checks, role and municipality isolation, permit edits and status prerequisites, fee assessments/exemptions, payment retries/concurrency, inspection assignments/results, certificates/notices, fee-schedule versioning/activation, reports/CSV, and database constraints. The frontend checks validate lint rules, TypeScript, and a production build; those checks alone do not establish browser behavior.
+The latest backend run passed 51 tests, including six regression tests for the observed Codespaces proxy scheme mismatch. [Proxy diagnosis and verification](PROXY_ORIGIN.md) records the reproduced failure, scoped startup fix and retained security checks. The backend suites exercise actual HTTP routes against temporary SQLite databases: session/CSRF checks, role and municipality isolation, permit edits and status prerequisites, fee assessments/exemptions, payment retries/concurrency, inspection assignments/results, certificates/notices, fee-schedule versioning/activation, reports/CSV, and database constraints. The frontend checks validate lint rules, TypeScript, and a production build; those checks alone do not establish browser behavior.
 
 ## Real-browser smoke test
 

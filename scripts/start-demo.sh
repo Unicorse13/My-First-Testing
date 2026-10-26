@@ -12,7 +12,12 @@ export DATABASE_PATH="$project_root/data/permitsnj.sqlite3"
 export ALLOWED_HOSTS=localhost,127.0.0.1
 export APP_ORIGIN=''
 export SESSION_SECURE=false
+uvicorn_proxy_args=()
 if [[ -n "${CODESPACE_NAME:-}" ]]; then
+  # The observed Codespaces proxy rewrites Origin/Host to the HTTP internal hop. Do not let
+  # X-Forwarded-Proto change only the scheme and break same-origin checks.
+  # Browser cookies remain Secure via SESSION_SECURE=true below.
+  uvicorn_proxy_args=(--no-proxy-headers)
   forwarding_domain="${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-app.github.dev}"
   demo_hostname="${CODESPACE_NAME}-8000.${forwarding_domain}"
   export ALLOWED_HOSTS="localhost,127.0.0.1,${demo_hostname}"
@@ -56,7 +61,7 @@ if [[ "$port_state" != free ]]; then
   exit 1
 fi
 mkdir -p data
-nohup .venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 > data/server.log 2>&1 < /dev/null &
+nohup .venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 "${uvicorn_proxy_args[@]}" > data/server.log 2>&1 < /dev/null &
 demo_pid=$!
 printf '%s\n' "$demo_pid" > data/server.pid
 if ! .venv/bin/python - <<'PY'
