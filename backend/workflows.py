@@ -64,10 +64,14 @@ def scope(user, alias='p'):
     return condition, params
 
 
+def public_payment(row):
+    return {key: value for key, value in dict(row).items() if key not in ('request_hash', 'idempotency_key')}
+
+
 def workflow_list(table, user):
     condition, params = scope(user)
     with connect() as db:
-        return [dict(row) for row in db.execute(f'SELECT w.*,p.number AS permit_number,p.work_address FROM {table} w JOIN permits p ON p.id=w.permit_id WHERE {condition} ORDER BY w.id DESC LIMIT 1000', params)]
+        return [public_payment(row) if table == 'payments' else dict(row) for row in db.execute(f'SELECT w.*,p.number AS permit_number,p.work_address FROM {table} w JOIN permits p ON p.id=w.permit_id WHERE {condition} ORDER BY w.id DESC LIMIT 1000', params)]
 
 
 def record(db, table, ident, user):
@@ -115,7 +119,7 @@ def pay(permit_id: int, body: PaymentInput, response: Response, user=Depends(cur
             if previous['permit_id'] != permit_id or previous['request_hash'] != digest:
                 raise HTTPException(409, 'Idempotency key was already used for a different request')
             response.status_code = 200
-            return dict(previous)
+            return public_payment(previous)
         if body.simulate_failure:
             audit(db, user, 'permit', permit_id, 'payment_declined', {'provider':'mock','amount_cents':body.amount_cents})
             return JSONResponse(status_code=402, content={'detail':'Mock provider declined this payment. No money was collected.'})
@@ -127,7 +131,7 @@ def pay(permit_id: int, body: PaymentInput, response: Response, user=Depends(cur
         audit(db, user, 'permit', permit_id, 'payment_recorded', {'payment_id':cursor.lastrowid,'amount_cents':body.amount_cents,'provider':'mock'})
         db.execute('UPDATE permits SET updated_at=? WHERE id=?', (now(),permit_id))
         response.status_code = 201
-        return dict(db.execute('SELECT * FROM payments WHERE id=?',(cursor.lastrowid,)).fetchone())
+        return public_payment(db.execute('SELECT * FROM payments WHERE id=?',(cursor.lastrowid,)).fetchone())
 
 
 @router.post('/payments/{ident}/reconcile')
@@ -139,7 +143,7 @@ def reconcile(ident: int, user=Depends(current_user)):
         if not row['reconciled']:
             db.execute('UPDATE payments SET reconciled=1 WHERE id=?',(ident,))
             audit(db,user,'permit',permit['id'],'payment_reconciled',{'payment_id':ident})
-        return dict(db.execute('SELECT * FROM payments WHERE id=?',(ident,)).fetchone())
+        return public_payment(db.execute('SELECT * FROM payments WHERE id=?',(ident,)).fetchone())
 
 
 @router.post('/permits/{permit_id}/plan-reviews', status_code=201)
@@ -200,7 +204,7 @@ def issue_certificate(permit_id: int, user=Depends(current_user)):
         db.execute('BEGIN IMMEDIATE')
         permit = get_permit(db,permit_id,user)
         paid = db.execute('SELECT COALESCE(SUM(amount_cents),0) FROM payments WHERE permit_id=?',(permit_id,)).fetchone()[0]
-        inspection = db.execute("SELECT result FROM inspections WHERE permit_id=? AND status='completed' ORDER BY id DESC LIMIT 1",(permit_id,)).fetchone()
+        inspection = db.execute("SELECT result FROM inspections WHERE permit_id=? ORDER BY id DESC LIMIT 1",(permit_id,)).fetchone()
         if permit['status'] not in ('issued','closed') or paid!=permit['fee_cents'] or not inspection or inspection['result']!='passed':
             raise HTTPException(409,'Certificate requires an issued or closed permit, full payment, and a latest passed inspection')
         if db.execute("SELECT 1 FROM certificates WHERE permit_id=? AND status='active'",(permit_id,)).fetchone():

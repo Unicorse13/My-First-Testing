@@ -14,7 +14,8 @@ class WorkflowTests(unittest.TestCase):
         self.directory = tempfile.TemporaryDirectory()
         self.environment = patch.dict(os.environ, {'DATABASE_PATH':self.directory.name+'/test.sqlite3','DEMO_MODE':'true','SESSION_SECURE':'false'})
         self.environment.start()
-        from backend.main import app
+        from backend.main import app, _attempts
+        _attempts.clear()
         self.client = TestClient(app)
         self.client.__enter__()
         self.login()
@@ -36,6 +37,8 @@ class WorkflowTests(unittest.TestCase):
     def test_partial_payment_replay_balance_and_reconcile(self):
         first = self.post('/permits/1/payments',{'amount_cents':2000,'idempotency_key':'partial-payment-001'})
         self.assertEqual(first.status_code,201,first.text)
+        self.assertNotIn('request_hash',first.json())
+        self.assertNotIn('idempotency_key',first.json())
         again = self.post('/permits/1/payments',{'amount_cents':2000,'idempotency_key':'partial-payment-001'})
         self.assertEqual(again.status_code,200)
         self.assertEqual(first.json()['id'],again.json()['id'])
@@ -124,6 +127,14 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn('no-store',document.headers['cache-control'])
         self.assertEqual(self.post('/certificates/'+str(ident)+'/revoke').json()['status'],'revoked')
         self.assertIn('revoked',self.client.get('/api/certificates/'+str(ident)+'/document').text)
+        self.assertEqual(self.post('/permits/5/certificates').status_code,201)
+
+    def test_pending_inspection_blocks_certificate(self):
+        scheduled = self.post('/permits/5/inspections',{'inspector_id':4,'scheduled_date':date.today().isoformat()})
+        self.assertEqual(scheduled.status_code,201)
+        self.assertEqual(self.post('/permits/5/certificates').status_code,409)
+        completed = self.client.patch('/api/inspections/'+str(scheduled.json()['id']),json={'result':'passed','notes':'Follow-up passed.'})
+        self.assertEqual(completed.status_code,200)
         self.assertEqual(self.post('/permits/5/certificates').status_code,201)
 
     def test_notice_lifecycle_html_safety_and_authorization(self):
